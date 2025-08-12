@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Hello, World!</title>
+	</head>
+	<body>
+		<h1 id="heading">Hello, World!</h1>
+		<p>This page comes from a static asset stored at `public/index.html` as configured in `wrangler.jsonc`.</p>
+
+		<div>
+			<button id="apiButton" type="button">Fetch Database Data</button>
+			<output id="apiResult" for="apiButton"></output>
+		</div>
+
+		<div>
+			<button id="button" type="button">Fetch a random UUID</button>
+			<output id="random" for="button"></output>
+		</div>
+		<script>
+			// APIエンドポイントにアクセスするボタン
+			const apiButton = document.getElementById("apiButton");
+			apiButton.addEventListener("click", () => {
+				fetch('/api')
+					.then((resp) => resp.json())
+					.then((data) => {
+						const apiResult = document.getElementById('apiResult');
+						if (data.success) {
+							apiResult.textContent = `Success! Found ${data.result.length} tables in database.`;
+							console.log('Database result:', data.result);
+						} else {
+							apiResult.textContent = `Error: ${data.error}`;
+						}
+					})
+					.catch((error) => {
+						const apiResult = document.getElementById('apiResult');
+						apiResult.textContent = `Error: ${error.message}`;
+					});
+			});
+
+			// 既存のUUIDボタン
+			const button = document.getElementById("button");
+			button.addEventListener("click", () => {
+				fetch('/random')
+					.then((resp) => resp.text())
+					.then((text) => {
+						const random = document.getElementById('random');
+						random.textContent = text;
+					});
+			});
+		</script>
+	</body>
+</html>

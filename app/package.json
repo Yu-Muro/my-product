@@ -1,0 +1,20 @@
+{
+	"name": "app",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev",
+		"type": "wrangler types",
+		"test": "vitest"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.8.19",
+		"typescript": "^5.5.2",
+		"vitest": "~3.2.0",
+		"wrangler": "^4.28.1"
+	},
+	"dependencies": {
+		"postgres": "^3.4.7"
+	}
+}

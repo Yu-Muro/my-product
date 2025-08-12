@@ -15,6 +15,7 @@
 		"wrangler": "^4.28.1"
 	},
 	"dependencies": {
+		"hono": "^4.9.1",
 		"postgres": "^3.4.7"
 	}
 }

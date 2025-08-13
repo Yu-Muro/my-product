@@ -19,3 +19,5 @@ jobs:
           environment: development
           workingDirectory: app
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          DATABASE_URL: ${{ secrets.DEVELOPMENT_DATABASE_URL }}

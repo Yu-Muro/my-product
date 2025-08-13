@@ -1,0 +1,11 @@
+services:
+  postgres:
+    container_name: my-product-db
+    image: postgres:17
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "user"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_DB: "my_product"

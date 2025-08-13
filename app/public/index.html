@@ -101,13 +101,6 @@
 				<button id="statsButton" type="button">Get Stats</button>
 				<output id="apiResult" for="apiButton"></output>
 			</div>
-
-			<div class="api-section">
-				<h3>🔧 System Health</h3>
-				<button id="healthButton" type="button" class="secondary">Check Health</button>
-				<button id="rootButton" type="button" class="secondary">Root Endpoint</button>
-				<output id="healthResult" for="healthButton"></output>
-			</div>
 		</div>
 
 		<script>
@@ -146,15 +139,6 @@
 
 			document.getElementById("statsButton").addEventListener("click", () => {
 				handleApiCall('/api/stats', 'apiResult');
-			});
-
-			// System Health
-			document.getElementById("healthButton").addEventListener("click", () => {
-				handleApiCall('/health', 'healthResult');
-			});
-
-			document.getElementById("rootButton").addEventListener("click", () => {
-				handleApiCall('/', 'healthResult');
 			});
 		</script>
 	</body>

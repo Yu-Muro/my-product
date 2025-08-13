@@ -3,51 +3,142 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Hello, World!</title>
+		<title>My Product - Hono API</title>
+		<style>
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+				max-width: 800px;
+				margin: 0 auto;
+				padding: 20px;
+				background-color: #f5f5f5;
+			}
+			.container {
+				background: white;
+				padding: 30px;
+				border-radius: 10px;
+				box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+			}
+			h1 {
+				color: #333;
+				text-align: center;
+				margin-bottom: 30px;
+			}
+			.api-section {
+				margin: 20px 0;
+				padding: 20px;
+				border: 1px solid #e0e0e0;
+				border-radius: 8px;
+				background-color: #fafafa;
+			}
+			.api-section h3 {
+				margin-top: 0;
+				color: #555;
+			}
+			button {
+				background-color: #007bff;
+				color: white;
+				border: none;
+				padding: 10px 20px;
+				border-radius: 5px;
+				cursor: pointer;
+				margin: 5px;
+				font-size: 14px;
+			}
+			button:hover {
+				background-color: #0056b3;
+			}
+			button.secondary {
+				background-color: #6c757d;
+			}
+			button.secondary:hover {
+				background-color: #545b62;
+			}
+			button.success {
+				background-color: #28a745;
+			}
+			button.success:hover {
+				background-color: #1e7e34;
+			}
+			output {
+				display: block;
+				margin-top: 10px;
+				padding: 10px;
+				background-color: #f8f9fa;
+				border: 1px solid #dee2e6;
+				border-radius: 4px;
+				font-family: monospace;
+				font-size: 12px;
+				white-space: pre-wrap;
+				max-height: 200px;
+				overflow-y: auto;
+			}
+			.status {
+				padding: 5px 10px;
+				border-radius: 3px;
+				font-size: 12px;
+				font-weight: bold;
+			}
+			.status.success {
+				background-color: #d4edda;
+				color: #155724;
+			}
+			.status.error {
+				background-color: #f8d7da;
+				color: #721c24;
+			}
+		</style>
 	</head>
 	<body>
-		<h1 id="heading">Hello, World!</h1>
-		<p>This page comes from a static asset stored at `public/index.html` as configured in `wrangler.jsonc`.</p>
+		<div class="container">
+			<h1>🚀 My Product - Hono API</h1>
+			<p>This page comes from a static asset stored at `public/index.html` as configured in `wrangler.jsonc`.</p>
 
-		<div>
-			<button id="apiButton" type="button">Fetch Database Data</button>
-			<output id="apiResult" for="apiButton"></output>
+			<div class="api-section">
+				<h3>📊 Database Operations</h3>
+				<button id="apiButton" type="button" class="success">Fetch All Tables</button>
+				<button id="tablesButton" type="button">Get Tables List</button>
+				<button id="dbInfoButton" type="button">Get DB Info</button>
+				<button id="statsButton" type="button">Get Stats</button>
+				<output id="apiResult" for="apiButton"></output>
+			</div>
 		</div>
 
-		<div>
-			<button id="button" type="button">Fetch a random UUID</button>
-			<output id="random" for="button"></output>
-		</div>
 		<script>
-			// APIエンドポイントにアクセスするボタン
-			const apiButton = document.getElementById("apiButton");
-			apiButton.addEventListener("click", () => {
-				fetch('/api')
+			// ユーティリティ関数
+			function displayResult(elementId, data, isError = false) {
+				const element = document.getElementById(elementId);
+				const status = isError ? 'error' : 'success';
+				const statusText = isError ? '❌ Error' : '✅ Success';
+
+				element.innerHTML = `<span class="status ${status}">${statusText}</span>\n${JSON.stringify(data, null, 2)}`;
+			}
+
+			function handleApiCall(url, resultElementId) {
+				fetch(url)
 					.then((resp) => resp.json())
 					.then((data) => {
-						const apiResult = document.getElementById('apiResult');
-						if (data.success) {
-							apiResult.textContent = `Success! Found ${data.result.length} tables in database.`;
-							console.log('Database result:', data.result);
-						} else {
-							apiResult.textContent = `Error: ${data.error}`;
-						}
+						displayResult(resultElementId, data, !data.success);
 					})
 					.catch((error) => {
-						const apiResult = document.getElementById('apiResult');
-						apiResult.textContent = `Error: ${error.message}`;
+						displayResult(resultElementId, { error: error.message }, true);
 					});
+			}
+
+			// Database Operations
+			document.getElementById("apiButton").addEventListener("click", () => {
+				handleApiCall('/api', 'apiResult');
 			});
 
-			// 既存のUUIDボタン
-			const button = document.getElementById("button");
-			button.addEventListener("click", () => {
-				fetch('/random')
-					.then((resp) => resp.text())
-					.then((text) => {
-						const random = document.getElementById('random');
-						random.textContent = text;
-					});
+			document.getElementById("tablesButton").addEventListener("click", () => {
+				handleApiCall('/api/tables', 'apiResult');
+			});
+
+			document.getElementById("dbInfoButton").addEventListener("click", () => {
+				handleApiCall('/api/db-info', 'apiResult');
+			});
+
+			document.getElementById("statsButton").addEventListener("click", () => {
+				handleApiCall('/api/stats', 'apiResult');
 			});
 		</script>
 	</body>

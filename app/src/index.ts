@@ -1,45 +1,80 @@
 // filepath: src/index.ts
-import postgres from "postgres";
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { DatabaseController } from './presentation/controllers/DatabaseController';
 
-export default {
-	async fetch(
-		request: Request,
-		env: Env,
-		ctx: ExecutionContext,
-	): Promise<Response> {
-		const url = new URL(request.url);
-		const path = url.pathname;
+// Honoアプリケーションの作成
+const app = new Hono<{ Bindings: Env }>();
 
-		// APIエンドポイントの処理
-		if (path === "/api") {
-			// Create a database client that connects to your database via Hyperdrive
-			// using the Hyperdrive credentials
-			const sql = postgres(env.HYPERDRIVE.connectionString, {
-				// Limit the connections for the Worker request to 5 due to Workers' limits on concurrent external connections
-				max: 5,
-				// If you are not using array types in your Postgres schema, disable `fetch_types` to avoid an additional round-trip (unnecessary latency)
-				fetch_types: false,
-			});
+// CORSミドルウェアを追加
+app.use('*', cors({
+  origin: '*',
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+}));
 
-			try {
-				// A very simple test query
-				const result = await sql`select * from pg_tables`;
+// ヘルスチェックエンドポイント
+app.get('/', (c) => {
+  return c.json({
+    message: 'Hello from Hono!',
+    status: 'healthy',
+    timestamp: new Date().toISOString()
+  });
+});
 
-				// Clean up the client, ensuring we don't kill the worker before that is
-				// completed.
-				ctx.waitUntil(sql.end());
+// ヘルスチェック専用エンドポイント
+app.get('/health', (c) => {
+  return c.json({
+    status: 'healthy',
+    service: 'my-product-api',
+    version: '1.0.0',
+    timestamp: new Date().toISOString()
+  });
+});
 
-				// Return result rows as JSON
-				return Response.json({ success: true, result: result });
-			} catch (e: any) {
-				console.error("Database error:", e.message);
+// データベース関連のエンドポイント
+app.get('/api', async (c) => {
+  const controller = new DatabaseController(c.env);
+  return controller.getAllTables(c);
+});
 
-				return Response.json({ success: false, error: e.message }, { status: 500 });
-			}
-		}
+app.get('/api/db-info', async (c) => {
+  const controller = new DatabaseController(c.env);
+  return controller.getDatabaseInfo(c);
+});
 
-		// その他のパスは静的ファイルとして処理
-		// デフォルトでindex.htmlを返す
-		return env.ASSETS.fetch(request);
-	},
-} satisfies ExportedHandler<Env>;
+app.get('/api/tables', async (c) => {
+  const controller = new DatabaseController(c.env);
+  return controller.getTablesList(c);
+});
+
+app.get('/api/stats', async (c) => {
+  const controller = new DatabaseController(c.env);
+  return controller.getDatabaseStats(c);
+});
+
+// 静的ファイルの配信
+app.get('*', async (c) => {
+  return c.env.ASSETS.fetch(c.req.raw);
+});
+
+// エラーハンドリング
+app.onError((err, c) => {
+  console.error('Error:', err);
+  return c.json({
+    success: false,
+    error: 'Internal Server Error',
+    timestamp: new Date().toISOString()
+  }, 500);
+});
+
+// 404ハンドリング
+app.notFound((c) => {
+  return c.json({
+    success: false,
+    error: 'Not Found',
+    timestamp: new Date().toISOString()
+  }, 404);
+});
+
+export default app;
